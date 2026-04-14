@@ -8,24 +8,32 @@ Para preguntas sobre leyes chilenas, normas o relaciones jurídicas basadas en l
 
 - `SubirColeccionLeyes.py` → carga el corpus en Qdrant
 - `ConsultarQdrant.py` → consulta semántica rápida sobre Qdrant
+- `ConsultarQdrantLangChain.mjs` → consulta y cruces sobre Qdrant usando LangChain
 - `texto_limpio/` → corpus fuente descargado
 
 ## Consulta rápida
 
-Ejemplo:
+Ejemplos:
 
 ```bash
 python ConsultarQdrant.py "despido injustificado y pago de indemnización laboral" --limit 3
+node ConsultarQdrantLangChain.mjs --query "despido injustificado y pago de indemnización laboral" --limit 3
+node ConsultarQdrantLangChain.mjs --queries "despido injustificado || nulidad del despido || indemnización sustitutiva" --limit 3
 ```
 
-Si el host no tiene Python/librerías locales, usar Docker como contingencia.
+Regla nueva de operación:
+
+- cuando el cliente realice búsquedas o cruces de información sobre la base legal, la capa preferente de consulta debe pasar por `ConsultarQdrantLangChain.mjs`
+- `ConsultarQdrant.py` puede seguir existiendo como helper simple de contingencia
+
+Si el host no tiene Python/librerías locales, usar Docker como contingencia. El helper LangChain queda autosuficiente dentro del workspace vía Node.
 
 ## Replicación de emergencia
 
 1. Tener Qdrant arriba en `127.0.0.1:6333`
 2. Mantener esta carpeta completa
 3. Ejecutar `SubirColeccionLeyes.py` para recargar el corpus
-4. Ejecutar `ConsultarQdrant.py` para validar búsquedas
+4. Ejecutar `ConsultarQdrant.py` o `ConsultarQdrantLangChain.mjs` para validar búsquedas
 
 ## Nota importante
 

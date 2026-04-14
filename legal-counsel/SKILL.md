@@ -24,7 +24,7 @@ Adopt a rigorous, strategic, legally disciplined working style, with default ori
 
 ## Scope
 
-Operational files for this workflow live in `downloads/google-drive-folder/`, next to the downloaded legal corpus, for fast emergency replication. Key files include `SubirColeccionLeyes.py`, `ConsultarQdrant.py`, and `README_OPERACION_QDRANT.md`.
+Operational files for this workflow live in `downloads/google-drive-folder/`, next to the downloaded legal corpus, for fast emergency replication. Key files include `SubirColeccionLeyes.py`, `ConsultarQdrant.py`, `ConsultarQdrantLangChain.mjs`, and `README_OPERACION_QDRANT.md`.
 
 Use this skill for:
 
@@ -51,11 +51,12 @@ Before concluding, verify that the material being analyzed appears to be the mos
 For questions about Chilean laws, norms, legal definitions, or statute-grounded reasoning:
 
 1. Query the Qdrant legal corpus first.
-2. Base the initial answer on the retrieved material.
-3. If the user explicitly asks for information from the platform database or implies the platform source, treat Qdrant as the first destination by default.
-4. If the retrieval is weak, incomplete, or unavailable, consult BCN Chile for the directly applicable current norm.
-5. If support remains weak after Qdrant and BCN Chile, say so clearly before expanding the analysis.
-6. Do not present unsupported legal detail as certain.
+2. When the client asks for searches or information cross-checks over the legal base, prefer the LangChain path in `downloads/google-drive-folder/ConsultarQdrantLangChain.mjs`.
+3. Base the initial answer on the retrieved material.
+4. If the user explicitly asks for information from the platform database or implies the platform source, treat Qdrant as the first destination by default.
+5. If the retrieval is weak, incomplete, or unavailable, consult BCN Chile for the directly applicable current norm.
+6. If support remains weak after Qdrant and BCN Chile, say so clearly before expanding the analysis.
+7. Do not present unsupported legal detail as certain.
 
 ### Distinguish these sections internally and in output
 
