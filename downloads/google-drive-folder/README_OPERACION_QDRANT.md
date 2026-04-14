@@ -41,9 +41,10 @@ Qdrant es la fuente principal operativa para este flujo legal. Si alguna respues
 
 ## Flujo LangGraph para búsquedas normativas
 
-Archivo base:
+Archivos base:
 
 - `LangGraphLegalFlow.mjs`
+- `LegalEvalService.mjs`
 
 Diseño actual del grafo:
 
@@ -71,6 +72,15 @@ Regla de oro:
 - si la respuesta contiene datos no respaldados por los fragmentos, no se entrega
 - se reintenta hasta 3 veces en Qdrant
 - recién después se habilita fallback a BCN Chile
+
+Servicio interno actual:
+
+- `LegalEvalService.mjs` centraliza las tareas de:
+  - calificación de fragmentos
+  - redacción preliminar
+  - contraste contra fragmentos
+- el servicio intenta usar modelo cuando está disponible
+- si el modelo no está disponible en el proceso, cae a heurística sin romper el flujo
 
 ## Regla de aislamiento de datos
 

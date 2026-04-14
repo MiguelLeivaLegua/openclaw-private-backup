@@ -1,16 +1,16 @@
 import process from 'node:process';
+import { execFileSync } from 'node:child_process';
 import { pipeline } from '@huggingface/transformers';
 import { Embeddings } from '@langchain/core/embeddings';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { StateGraph, END } from '@langchain/langgraph';
-import { initChatModel } from 'langchain';
 
 const QDRANT_URL = 'http://127.0.0.1:6333';
 const COLECCION = 'normativas_chile';
 const MODELO_EMBEDDINGS = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2';
 const MAX_QDRANT_ATTEMPTS = 3;
 const MIN_CONFIDENCE_TO_SEND = 0.95;
-const AI_MODEL = process.env.LEGAL_GRAPH_MODEL || 'openai:gpt-4.1-mini';
+const EVAL_SERVICE = new URL('./LegalEvalService.mjs', import.meta.url);
 
 class HuggingFaceLocalEmbeddings extends Embeddings {
   constructor(fields = {}) {
@@ -37,31 +37,14 @@ class HuggingFaceLocalEmbeddings extends Embeddings {
   }
 }
 
-function tryBuildModel() {
-  try {
-    return initChatModel(AI_MODEL);
-  } catch {
-    return null;
-  }
-}
-
-async function askJson(model, system, payload) {
-  if (!model) return null;
-  try {
-    const response = await model.invoke([
-      ['system', `${system}\nResponde solo JSON válido.`],
-      ['human', JSON.stringify(payload)],
-    ]);
-    const text = typeof response?.content === 'string'
-      ? response.content
-      : Array.isArray(response?.content)
-        ? response.content.map((x) => x?.text || '').join(' ')
-        : '';
-    const cleaned = text.trim().replace(/^```json\s*/i, '').replace(/^```/, '').replace(/```$/, '').trim();
-    return JSON.parse(cleaned);
-  } catch {
-    return null;
-  }
+function callEvalService(mode, payload) {
+  const out = execFileSync('node', [EVAL_SERVICE.pathname, mode], {
+    input: JSON.stringify(payload),
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024,
+    env: process.env,
+  });
+  return JSON.parse(out);
 }
 
 async function buildStore() {
@@ -115,137 +98,72 @@ async function nodoBusqueda(state) {
 }
 
 async function nodoCalificacion(state) {
-  const model = state.model || tryBuildModel();
-  const questionTerms = state.question.toLowerCase().split(/\W+/).filter((x) => x.length > 3);
-
-  const aiResult = await askJson(model,
-    'Evalúa si cada fragmento responde realmente una pregunta jurídica de un abogado. Devuelve un arreglo items con {index, isRelevant, relevanceScore, reason}.',
-    {
-      question: state.question,
-      fragments: (state.fragments || []).map((f, i) => ({ index: i, score: f.score, texto: f.texto.slice(0, 1800), titulo: f.titulo, articulo: f.articulo })),
-    });
+  const evalResult = callEvalService('qualify', {
+    question: state.question,
+    fragments: (state.fragments || []).map((f) => ({ score: f.score, texto: f.texto, titulo: f.titulo, articulo: f.articulo })),
+  });
 
   const qualified = (state.fragments || []).map((fragment, idx) => {
-    const aiItem = aiResult?.items?.find?.((x) => Number(x.index) === idx);
-    if (aiItem) {
-      return {
-        ...fragment,
-        matchedTerms: [],
-        relevanceScore: Number(aiItem.relevanceScore || 0),
-        isRelevant: Boolean(aiItem.isRelevant),
-        qualificationReason: aiItem.reason || 'Calificación IA sin detalle adicional.',
-        qualificationSource: 'ai',
-      };
-    }
-
-    const text = `${fragment.titulo || ''} ${fragment.texto}`.toLowerCase();
-    const matchedTerms = questionTerms.filter((term) => text.includes(term));
-    const semanticScore = Number(fragment.score || 0);
-    const relevanceScore = Math.min(1, (semanticScore * 0.7) + ((matchedTerms.length / Math.max(questionTerms.length, 1)) * 0.3));
+    const item = evalResult?.items?.find?.((x) => Number(x.index) === idx) || {};
     return {
       ...fragment,
-      matchedTerms,
-      relevanceScore,
-      isRelevant: relevanceScore >= 0.45,
-      qualificationReason: relevanceScore >= 0.45 ? 'El fragmento sí parece responder a la pregunta jurídica.' : 'El fragmento no parece suficientemente alineado con la pregunta.',
-      qualificationSource: 'heuristic',
+      relevanceScore: Number(item.relevanceScore || 0),
+      isRelevant: Boolean(item.isRelevant),
+      qualificationReason: item.reason || 'Sin razón de calificación.',
+      qualificationSource: evalResult?.source || 'service',
     };
   });
 
   const relevant = qualified.filter((x) => x.isRelevant);
   return {
     ...state,
-    model,
     fragments: qualified,
     relevantFragments: relevant,
     needsRetry: relevant.length === 0,
-    history: [...(state.history || []), { stage: 'calificacion', relevant: relevant.length, total: qualified.length, source: aiResult ? 'ai' : 'heuristic' }],
+    history: [...(state.history || []), { stage: 'calificacion', relevant: relevant.length, total: qualified.length, source: evalResult?.source || 'service' }],
   };
 }
 
 async function nodoRespuesta(state) {
-  const model = state.model || tryBuildModel();
-  const fragments = state.relevantFragments || [];
-  const top = fragments.slice(0, 4);
-
-  let draft = null;
-  const aiResult = await askJson(model,
-    'Redacta una respuesta jurídica preliminar exclusivamente basada en fragmentos entregados. Devuelve JSON con {answer}. No agregues datos externos.',
-    {
-      question: state.question,
-      fragments: top.map((f) => ({
-        cita: buildCitation(f),
-        score: f.score,
-        relevanceScore: f.relevanceScore,
-        texto: f.texto.slice(0, 1800),
-      })),
-    });
-
-  if (aiResult?.answer) {
-    draft = aiResult.answer;
-  } else {
-    const answerBody = top.map((fragment, idx) => {
-      const preview = fragment.texto.slice(0, 700).replace(/\s+/g, ' ').trim();
-      return [
-        `Fragmento ${idx + 1}`,
-        buildCitation(fragment),
-        `Score semántico: ${fragment.score}`,
-        `Relevancia interna: ${fragment.relevanceScore}`,
-        `Texto: ${preview}`,
-      ].join('\n');
-    }).join('\n\n');
-    draft = top.length
-      ? `Respuesta preliminar basada en fragmentos recuperados:\n\n${answerBody}`
-      : 'No hay fragmentos suficientemente relevantes para redactar una respuesta preliminar.';
-  }
+  const top = (state.relevantFragments || []).slice(0, 4);
+  const evalResult = callEvalService('draft', {
+    question: state.question,
+    fragments: top.map((f) => ({
+      cita: buildCitation(f),
+      score: f.score,
+      relevanceScore: f.relevanceScore,
+      articulo: f.articulo,
+      texto: f.texto,
+    })),
+  });
 
   return {
     ...state,
-    model,
-    draftAnswer: draft,
-    citedAnswer: draft,
-    history: [...(state.history || []), { stage: 'respuesta', citedFragments: top.length, source: aiResult?.answer ? 'ai' : 'heuristic' }],
+    draftAnswer: evalResult.answer,
+    citedAnswer: evalResult.answer,
+    history: [...(state.history || []), { stage: 'respuesta', citedFragments: top.length, source: evalResult?.source || 'service' }],
   };
 }
 
 async function nodoContraste(state) {
-  const model = state.model || tryBuildModel();
-  const draft = String(state.draftAnswer || '');
-  const fragments = state.relevantFragments || [];
-
-  const aiResult = await askJson(model,
-    'Evalúa si la respuesta contiene datos no soportados por los fragmentos. Devuelve {supported, confidence, unsupportedSignals}.',
-    {
-      question: state.question,
-      answer: draft,
-      fragments: fragments.map((f) => ({ cita: buildCitation(f), texto: f.texto.slice(0, 1800) })),
-    });
-
-  if (aiResult) {
-    return {
-      ...state,
-      model,
-      supported: Boolean(aiResult.supported),
-      avgRelevance: Number(aiResult.confidence || 0),
-      unsupportedSignals: aiResult.unsupportedSignals || [],
-      history: [...(state.history || []), { stage: 'contraste', supported: Boolean(aiResult.supported), avgRelevance: Number(aiResult.confidence || 0), unsupportedSignals: aiResult.unsupportedSignals || [], source: 'ai' }],
-    };
-  }
-
-  const unsupportedSignals = [];
-  if (!fragments.length) unsupportedSignals.push('No hay fragmentos relevantes para soportar la respuesta.');
-  if (/artículo\s+\d+/i.test(draft) && !fragments.some((f) => f.articulo)) unsupportedSignals.push('La respuesta menciona artículos, pero los fragmentos no traen artículo identificado.');
-  if (/título:/i.test(draft) && !fragments.some((f) => f.titulo)) unsupportedSignals.push('La respuesta cita título, pero el fragmento no lo trae enriquecido.');
-  const avgRelevance = fragments.length ? fragments.reduce((acc, cur) => acc + (cur.relevanceScore || 0), 0) / fragments.length : 0;
-  const supported = unsupportedSignals.length === 0 && avgRelevance >= 0.55;
+  const evalResult = callEvalService('contrast', {
+    question: state.question,
+    answer: state.draftAnswer,
+    fragments: (state.relevantFragments || []).map((f) => ({
+      cita: buildCitation(f),
+      articulo: f.articulo,
+      relevanceScore: f.relevanceScore,
+      score: f.score,
+      texto: f.texto,
+    })),
+  });
 
   return {
     ...state,
-    model,
-    supported,
-    avgRelevance,
-    unsupportedSignals,
-    history: [...(state.history || []), { stage: 'contraste', supported, avgRelevance, unsupportedSignals, source: 'heuristic' }],
+    supported: Boolean(evalResult.supported),
+    avgRelevance: Number(evalResult.confidence || 0),
+    unsupportedSignals: evalResult.unsupportedSignals || [],
+    history: [...(state.history || []), { stage: 'contraste', supported: Boolean(evalResult.supported), avgRelevance: Number(evalResult.confidence || 0), unsupportedSignals: evalResult.unsupportedSignals || [], source: evalResult?.source || 'service' }],
   };
 }
 
@@ -292,7 +210,6 @@ export async function buildLegalNormsGraph() {
       question: null,
       limit: null,
       store: null,
-      model: null,
       attempts: null,
       fragments: null,
       relevantFragments: null,
