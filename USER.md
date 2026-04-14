@@ -33,6 +33,7 @@ _Learn about the person you're helping. Update this as you go._
 - Cuando el usuario pida información de la base de datos o dé a entender que quiere la respuesta desde la fuente propia de la plataforma, espera que vaya primero a Qdrant.
 - Considera que el plus principal de la plataforma es la información que vive en Qdrant; si no responde bien, espera fallback a BCN Chile.
 - Quiere que las búsquedas y cruces de información de clientes sobre Qdrant se hagan con LangChain como capa preferente de consulta.
+- Tiene scripts externos asociados al flujo BCN Chile: una shell de Windows para limpiar descargas HTML y un Python con Selenium para buscar/descargar normas; quiere integrarlos con la carga a Qdrant para minimizar búsquedas externas y mantener la base propia actualizada.
 - El usuario puede enviar música, fotos, imágenes y otros archivos como evidencia; espera que mantenga ese material estructurado y que vaya guardando la información relevante.
 - Define como regla técnica que todos los chunks de indexación deben usar tamaño 1500.
 - Espera que, si un usuario solicita un documento, yo pueda crearlo en el formato que pida cuando sea compatible con el trabajo de la plataforma.
