@@ -1,3 +1,5 @@
 Codigo Penal
 
-Articulo 1. Ejemplo normativo.
+Articulo 1. La ley penal se aplica conforme a los principios establecidos por el ordenamiento jurídico chileno.
+
+Articulo 2. Este texto de prueba representa una norma con suficiente contenido para validar el flujo incremental de limpieza, segmentación e indexación en Qdrant sin tener que relanzar toda la colección histórica.

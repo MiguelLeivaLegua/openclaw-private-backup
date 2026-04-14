@@ -29,9 +29,15 @@ python3 extraer_texto.py \
   --output-dir /root/.openclaw/workspace/downloads/google-drive-folder/texto_limpio
 ```
 
-### 3. Subir a Qdrant
+### 3. Subir una ley puntual a Qdrant
 
-Desde la carpeta superior:
+```bash
+node /root/.openclaw/workspace/downloads/google-drive-folder/SubirColeccionLeyesIncremental.mjs --file Codigo_del_Trabajo_207436.txt
+```
+
+### 4. Recargar corpus completo a Qdrant
+
+Si alguna vez necesitas recargar todo el corpus histórico, sigue existiendo:
 
 ```bash
 python3 /root/.openclaw/workspace/downloads/google-drive-folder/SubirColeccionLeyes.py
@@ -62,7 +68,7 @@ Qué hace:
 3. descarga HTML desde BCN
 4. limpia a `.txt`
 5. deja los `.txt` en `downloads/google-drive-folder/texto_limpio/`
-6. dispara la carga a Qdrant
+6. dispara la carga incremental a Qdrant solo para el `.txt` recién generado
 
 ## Nota
 

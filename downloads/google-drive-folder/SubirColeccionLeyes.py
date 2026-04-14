@@ -1,8 +1,10 @@
 import os
 import re
+import uuid
 import logging
+import argparse
 from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, Distance, PointStruct
+from qdrant_client.models import VectorParams, Distance, PointStruct, Filter, FieldCondition, MatchValue
 from sentence_transformers import SentenceTransformer
 
 # 📌 Configuración
@@ -245,7 +247,26 @@ def limpiar_texto_legal(texto_crudo: str) -> str:
     return texto_limpio
 
 
-def procesar_txts():
+def obtener_archivos_txt(ruta_txts: str, archivo_objetivo: str | None = None):
+    if archivo_objetivo:
+        if os.path.isabs(archivo_objetivo):
+            return [archivo_objetivo]
+        return [os.path.join(ruta_txts, archivo_objetivo)]
+    return [os.path.join(ruta_txts, f) for f in os.listdir(ruta_txts) if f.lower().endswith('.txt')]
+
+
+def borrar_chunks_previos(client: QdrantClient, archivo: str):
+    client.delete(
+        collection_name=COLECCION,
+        points_selector=Filter(
+            must=[FieldCondition(key='archivo', match=MatchValue(value=archivo))]
+        ),
+        wait=True,
+    )
+    logger.info(f"🧹 Chunks previos eliminados para: {archivo}")
+
+
+def procesar_txts(archivo_objetivo: str | None = None):
     # 🔌 Conectar a Qdrant
     try:
         client = QdrantClient("localhost", port=6333)
@@ -267,19 +288,18 @@ def procesar_txts():
         )
         logger.info(f"Colección '{COLECCION}' creada")
 
-    # 🔢 ID incremental
-    id_counter = 1
     puntos_batch = []
     archivos_procesados = 0
     archivos_vacios = 0
     errores = 0
+    total_chunks_insertados = 0
 
-    archivos_txt = [f for f in os.listdir(RUTA_TXTS) if f.lower().endswith(".txt")]
+    archivos_txt = obtener_archivos_txt(RUTA_TXTS, archivo_objetivo)
     logger.info(f"Encontrados {len(archivos_txt)} archivos TXT")
 
     # 📄 Procesar TXTs
-    for archivo in archivos_txt:
-        ruta_txt = os.path.join(RUTA_TXTS, archivo)
+    for ruta_txt in archivos_txt:
+        archivo = os.path.basename(ruta_txt)
         
         try:
             # Leer archivo con manejo de encoding
@@ -309,6 +329,8 @@ def procesar_txts():
             nombre_norma = os.path.splitext(archivo)[0].replace('_', ' ')
             # Quitar el ID numérico final (ej: "Codigo del Trabajo 207436" → "Codigo del Trabajo")
             nombre_norma = re.sub(r'\s+\d+$', '', nombre_norma)
+
+            borrar_chunks_previos(client, archivo)
             
             # ✂️ Dividir en chunks semánticos (documento completo)
             chunks = dividir_texto_legal(texto_limpio)
@@ -322,7 +344,7 @@ def procesar_txts():
                 vector = modelo.encode(chunk).tolist()
 
                 puntos_batch.append(PointStruct(
-                    id=id_counter,
+                    id=str(uuid.uuid4()),
                     vector=vector,
                     payload={
                         "texto": chunk,
@@ -333,8 +355,8 @@ def procesar_txts():
                         "chars": len(chunk)
                     }
                 ))
-                id_counter += 1
                 chunks_insertados += 1
+                total_chunks_insertados += 1
 
                 # Insertar en lotes para mejor rendimiento
                 if len(puntos_batch) >= BATCH_SIZE:
@@ -357,11 +379,14 @@ def procesar_txts():
     logger.info(f"{'='*60}")
     logger.info(f"✅ COMPLETADO")
     logger.info(f"   📄 Archivos procesados: {archivos_procesados}")
-    logger.info(f"   📊 Total chunks/vectores: {id_counter - 1}")
+    logger.info(f"   📊 Total chunks/vectores: {total_chunks_insertados}")
     logger.info(f"   ⚠️  Archivos vacíos: {archivos_vacios}")
     logger.info(f"   ❌ Errores: {errores}")
     logger.info(f"{'='*60}")
 
 
 if __name__ == "__main__":
-    procesar_txts()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--file', help='Archivo TXT específico a reindexar')
+    args = parser.parse_args()
+    procesar_txts(archivo_objetivo=args.file)

@@ -6,7 +6,9 @@ Para preguntas sobre leyes chilenas, normas o relaciones jurídicas basadas en l
 
 ## Archivos clave en esta carpeta
 
-- `SubirColeccionLeyes.py` → carga el corpus en Qdrant
+- `SubirColeccionLeyes.py` → recarga completa del corpus en Qdrant
+- `SubirColeccionLeyesIncremental.mjs` → carga incremental de un `.txt` puntual en Qdrant
+- `ActualizarLeyDesdeConsulta.mjs` → resuelve una ley por consulta y dispara descarga, limpieza e indexación incremental
 - `ConsultarQdrant.py` → consulta semántica rápida sobre Qdrant
 - `ConsultarQdrantLangChain.mjs` → consulta y cruces sobre Qdrant usando LangChain
 - `texto_limpio/` → corpus fuente descargado
@@ -32,8 +34,9 @@ Si el host no tiene Python/librerías locales, usar Docker como contingencia. El
 
 1. Tener Qdrant arriba en `127.0.0.1:6333`
 2. Mantener esta carpeta completa
-3. Ejecutar `SubirColeccionLeyes.py` para recargar el corpus
-4. Ejecutar `ConsultarQdrant.py` o `ConsultarQdrantLangChain.mjs` para validar búsquedas
+3. Para una ley puntual, ejecutar `SubirColeccionLeyesIncremental.mjs --file <archivo>.txt`
+4. Para recarga completa, ejecutar `SubirColeccionLeyes.py`
+5. Ejecutar `ConsultarQdrant.py` o `ConsultarQdrantLangChain.mjs` para validar búsquedas
 
 ## Nota importante
 

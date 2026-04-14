@@ -10,7 +10,7 @@ const HTML_DIR = path.join(BCN_DIR, 'html_bcn');
 const TXT_DIR = path.join(ROOT, 'texto_limpio');
 const DOWNLOADER = path.join(BCN_DIR, 'DescargarLeyesChile_portable.py');
 const CLEANER = path.join(BCN_DIR, 'extraer_texto.py');
-const UPLOADER = path.join(ROOT, 'SubirColeccionLeyes.py');
+const UPLOADER = path.join(ROOT, 'SubirColeccionLeyesIncremental.mjs');
 const MODEL_NAME = process.env.LEGAL_GRAPH_MODEL || 'openai:gpt-4.1-mini';
 
 function slugify(text) {
@@ -117,6 +117,7 @@ async function main() {
       txtDir: TXT_DIR,
       expectedHtml: path.join(HTML_DIR, `${safeName}_${resolution.normaId}.html`),
       expectedTxtPrefix: `${safeName}_${resolution.normaId}`,
+      expectedTxt: path.join(TXT_DIR, `${safeName}_${resolution.normaId}.txt`),
     },
   };
 
@@ -127,7 +128,8 @@ async function main() {
 
   const download = runOrThrow('python3', [DOWNLOADER, '--html-dir', HTML_DIR, '--norma-id', resolution.normaId, '--name', safeName], 'descarga BCN');
   const clean = runOrThrow('python3', [CLEANER, '--html-dir', HTML_DIR, '--output-dir', TXT_DIR], 'limpieza texto');
-  const upload = runOrThrow('python3', [UPLOADER], 'carga Qdrant');
+  const targetTxt = `${safeName}_${resolution.normaId}.txt`;
+  const upload = runOrThrow('node', [UPLOADER, '--file', targetTxt], 'carga Qdrant');
 
   payload.steps = {
     download: download.stdout.trim(),
