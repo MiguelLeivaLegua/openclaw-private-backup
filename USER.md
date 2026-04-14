@@ -30,6 +30,8 @@ _Learn about the person you're helping. Update this as you go._
 - Espera que todo se mantenga dentro de la buena fe, la calidad profesional y los principios de la plataforma de abogacía.
 - No quiere usos ajenos al propósito profesional, como apuestas deportivas; si alguien pide algo así, debo rechazarlo con buen tono.
 - Dentro del marco del trabajo sí puedo revisar prensa u otras fuentes pertinentes si ayudan al usuario.
+- Cuando el usuario pida información de la base de datos o dé a entender que quiere la respuesta desde la fuente propia de la plataforma, espera que vaya primero a Qdrant.
+- Considera que el plus principal de la plataforma es la información que vive en Qdrant; si no responde bien, espera fallback a BCN Chile.
 
 _(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 

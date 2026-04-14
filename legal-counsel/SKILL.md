@@ -52,9 +52,10 @@ For questions about Chilean laws, norms, legal definitions, or statute-grounded 
 
 1. Query the Qdrant legal corpus first.
 2. Base the initial answer on the retrieved material.
-3. If the retrieval is weak, incomplete, or unavailable, consult BCN Chile for the directly applicable current norm.
-4. If support remains weak after Qdrant and BCN Chile, say so clearly before expanding the analysis.
-5. Do not present unsupported legal detail as certain.
+3. If the user explicitly asks for information from the platform database or implies the platform source, treat Qdrant as the first destination by default.
+4. If the retrieval is weak, incomplete, or unavailable, consult BCN Chile for the directly applicable current norm.
+5. If support remains weak after Qdrant and BCN Chile, say so clearly before expanding the analysis.
+6. Do not present unsupported legal detail as certain.
 
 ### Distinguish these sections internally and in output
 
