@@ -11,6 +11,7 @@ const MODELO_EMBEDDINGS = 'sentence-transformers/paraphrase-multilingual-MiniLM-
 const MAX_QDRANT_ATTEMPTS = 3;
 const MIN_CONFIDENCE_TO_SEND = 0.95;
 const EVAL_SERVICE = new URL('./LegalEvalService.mjs', import.meta.url);
+const ROUTER_SERVICE = new URL('./LegalQueryRouter.mjs', import.meta.url);
 
 class HuggingFaceLocalEmbeddings extends Embeddings {
   constructor(fields = {}) {
@@ -39,6 +40,16 @@ class HuggingFaceLocalEmbeddings extends Embeddings {
 
 function callEvalService(mode, payload) {
   const out = execFileSync('node', [EVAL_SERVICE.pathname, mode], {
+    input: JSON.stringify(payload),
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024,
+    env: process.env,
+  });
+  return JSON.parse(out);
+}
+
+function callRouterService(payload) {
+  const out = execFileSync('node', [ROUTER_SERVICE.pathname], {
     input: JSON.stringify(payload),
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
@@ -96,6 +107,31 @@ async function nodoBusqueda(state) {
     attempts: (state.attempts || 0) + 1,
     fragments,
     history: [...(state.history || []), { stage: 'busqueda', attempt: (state.attempts || 0) + 1, hits: fragments.length, collection }],
+  };
+}
+
+function nodoRouter(state) {
+  if (state.collection) {
+    return {
+      ...state,
+      mode: state.mode || (state.collection !== DEFAULT_COLLECTION ? 'cliente' : 'normas'),
+      history: [...(state.history || []), { stage: 'router', mode: state.mode || (state.collection !== DEFAULT_COLLECTION ? 'cliente' : 'normas'), collection: state.collection, source: 'manual' }],
+    };
+  }
+
+  const route = callRouterService({
+    question: state.question,
+    collection: state.collection || null,
+    userCollection: state.userCollection || null,
+  });
+
+  return {
+    ...state,
+    mode: route.mode || 'normas',
+    collection: route.collection || DEFAULT_COLLECTION,
+    routeConfidence: Number(route.confidence || 0),
+    routeReason: route.reason || 'Sin razón de ruteo.',
+    history: [...(state.history || []), { stage: 'router', mode: route.mode || 'normas', collection: route.collection || DEFAULT_COLLECTION, confidence: Number(route.confidence || 0), source: route.source || 'service', reason: route.reason || null }],
   };
 }
 
@@ -220,6 +256,9 @@ export async function buildLegalNormsGraph() {
       question: null,
       mode: null,
       collection: null,
+      userCollection: null,
+      routeConfidence: null,
+      routeReason: null,
       limit: null,
       store: null,
       attempts: null,
@@ -238,6 +277,7 @@ export async function buildLegalNormsGraph() {
     },
   });
 
+  graph.addNode('router', nodoRouter);
   graph.addNode('busqueda', nodoBusqueda);
   graph.addNode('calificacion', nodoCalificacion);
   graph.addNode('respuesta', nodoRespuesta);
@@ -245,7 +285,8 @@ export async function buildLegalNormsGraph() {
   graph.addNode('verificacion', nodoVerificacion);
   graph.addNode('fallback_bcn', nodoBCN);
 
-  graph.setEntryPoint('busqueda');
+  graph.setEntryPoint('router');
+  graph.addEdge('router', 'busqueda');
   graph.addEdge('busqueda', 'calificacion');
   graph.addConditionalEdges('calificacion', routeAfterCalificacion, ['busqueda', 'respuesta', 'fallback_bcn']);
   graph.addEdge('respuesta', 'contraste');
@@ -260,6 +301,7 @@ async function main() {
   const argv = process.argv.slice(2);
   let question = '';
   let collection = DEFAULT_COLLECTION;
+  let userCollection = null;
   let mode = 'normas';
   let limit = 6;
 
@@ -270,8 +312,7 @@ async function main() {
     } else if (token === '--mode') {
       mode = argv[++i] || mode;
     } else if (token === '--user-collection') {
-      collection = argv[++i] || collection;
-      mode = 'cliente';
+      userCollection = argv[++i] || userCollection;
     } else if (token === '--limit') {
       limit = Number(argv[++i] || limit);
     } else if (!token.startsWith('--')) {
@@ -285,8 +326,20 @@ async function main() {
     process.exit(1);
   }
 
+  const explicitCollection = argv.includes('--collection');
+  const explicitMode = argv.includes('--mode');
+  const initialState = {
+    question,
+    mode: explicitMode ? mode : null,
+    collection: explicitCollection ? collection : null,
+    userCollection,
+    limit,
+    attempts: 0,
+    history: [],
+  };
+
   const app = await buildLegalNormsGraph();
-  const result = await app.invoke({ question, mode, collection, limit, attempts: 0, history: [] });
+  const result = await app.invoke(initialState);
   console.log(JSON.stringify(result, null, 2));
 }
 

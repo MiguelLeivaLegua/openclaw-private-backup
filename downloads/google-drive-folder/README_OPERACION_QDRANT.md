@@ -48,6 +48,7 @@ Archivos base:
 
 - `LangGraphLegalFlow.mjs`
 - `LegalEvalService.mjs`
+- `LegalQueryRouter.mjs`
 
 Diseño actual del grafo:
 
@@ -55,6 +56,13 @@ El grafo ahora soporta dos modos:
 
 - `normas` → colección `normativas_chile`
 - `cliente` → colección `user_<slug>` o la que se indique explícitamente
+
+Además, antes de entrar a búsqueda, pasa por un router:
+
+- `LegalQueryRouter.mjs`
+- intenta clasificar la consulta con LLM si hay modelo
+- si no, usa heurística robusta
+- decide entre normativa general y base documental del cliente
 
 1. **Nodo de búsqueda**
    - consulta Qdrant
