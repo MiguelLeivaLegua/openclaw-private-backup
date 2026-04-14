@@ -21,6 +21,8 @@ _Learn about the person you're helping. Update this as you go._
 - Quiere que guarde en memoria todas las reglas, decisiones y datos relevantes para la operación del sistema.
 - Espera que los documentos enviados por usuarios en Slack se almacenen siempre como respaldo, idealmente con nombre de usuario y referencia a la causa o asunto.
 - Considera a los usuarios de Slack como usuarios reales del sistema, por lo que debo cuidar especialmente la experiencia, claridad y confiabilidad.
+- Exige aislamiento estricto en Qdrant: cada usuario debe tener su propia colección y no se deben mezclar datos ni causas entre usuarios.
+- Espera que cualquier documento recibido, sin importar su formato, se depure hasta texto limpio `.txt` antes de indexarlo en Qdrant.
 
 _(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 

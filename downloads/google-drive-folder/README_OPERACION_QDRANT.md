@@ -30,3 +30,11 @@ Si el host no tiene Python/librerías locales, usar Docker como contingencia.
 ## Nota importante
 
 Qdrant es la fuente principal operativa para este flujo legal. Si alguna respuesta no aparece bien respaldada por la base, se debe priorizar la recuperación desde Qdrant antes de responder.
+
+## Regla de aislamiento de datos
+
+- Cada usuario debe tener su propia colección en Qdrant.
+- No mezclar datos entre usuarios.
+- No cruzar causas entre colecciones por error.
+- Antes de indexar cualquier documento, extraer y depurar el contenido hasta obtener texto limpio `.txt`.
+- Solo el texto depurado debe viajar a Qdrant.
