@@ -17,6 +17,8 @@ _Learn about the person you're helping. Update this as you go._
 - Para consultas sobre leyes chilenas, normas y relaciones jurídicas, espera que use Qdrant como fuente principal de trabajo antes de responder.
 - Quiere que el programa legal de consulta/carga quede junto al corpus descargado en `downloads/google-drive-folder/` para replicación rápida ante emergencias.
 - Define que Qdrant es la fuente principal del sistema para legislación chilena y que él, como dueño, entregará las actualizaciones del sistema cuando corresponda.
+- Si Qdrant no responde suficientemente una consulta sobre normativa chilena, espera que use BCN Chile como fuente secundaria para ir a la norma vigente directamente.
+- Quiere que guarde en memoria todas las reglas, decisiones y datos relevantes para la operación del sistema.
 
 _(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 
