@@ -35,6 +35,7 @@ _Learn about the person you're helping. Update this as you go._
 - El usuario puede enviar música, fotos, imágenes y otros archivos como evidencia; espera que mantenga ese material estructurado y que vaya guardando la información relevante.
 - Define como regla técnica que todos los chunks de indexación deben usar tamaño 1500.
 - Espera que, si un usuario solicita un documento, yo pueda crearlo en el formato que pida cuando sea compatible con el trabajo de la plataforma.
+- Para entrega de documentos por Slack, conviene guardarlos dentro del workspace, idealmente en `outputs/slack-documents/`, y adjuntarlos usando ruta absoluta permitida.
 
 _(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 
