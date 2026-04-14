@@ -19,6 +19,8 @@ _Learn about the person you're helping. Update this as you go._
 - Define que Qdrant es la fuente principal del sistema para legislación chilena y que él, como dueño, entregará las actualizaciones del sistema cuando corresponda.
 - Si Qdrant no responde suficientemente una consulta sobre normativa chilena, espera que use BCN Chile como fuente secundaria para ir a la norma vigente directamente.
 - Quiere que guarde en memoria todas las reglas, decisiones y datos relevantes para la operación del sistema.
+- Espera que los documentos enviados por usuarios en Slack se almacenen siempre como respaldo, idealmente con nombre de usuario y referencia a la causa o asunto.
+- Considera a los usuarios de Slack como usuarios reales del sistema, por lo que debo cuidar especialmente la experiencia, claridad y confiabilidad.
 
 _(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 

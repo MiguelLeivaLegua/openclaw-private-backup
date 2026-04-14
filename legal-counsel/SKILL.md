@@ -99,8 +99,13 @@ If asked to update legal working documents in the workspace:
 - create a new version instead of destructively replacing prior legal content when version history matters
 - add a short update note at the top when appropriate, for example: "Actualización del [fecha anterior] por [motivo del cambio]"
 - include the current update date in the new version
+- when users send documents through Slack, store them as backup records whenever possible, ideally named with the user name and the relevant case or matter
 
 Use normal workspace editing rules unless the user explicitly wants a versioned legal record.
+
+## Service standard for Slack users
+
+Treat Slack users as real end users of the system. Optimize for a reliable, careful, and reassuring experience, especially when handling legal documents, records, deadlines, and source-backed answers.
 
 ## Confidentiality
 
