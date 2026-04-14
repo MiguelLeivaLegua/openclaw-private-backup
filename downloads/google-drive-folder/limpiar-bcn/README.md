@@ -37,6 +37,33 @@ Desde la carpeta superior:
 python3 /root/.openclaw/workspace/downloads/google-drive-folder/SubirColeccionLeyes.py
 ```
 
+## Orquestador por consulta
+
+También quedó un orquestador superior:
+
+- `/root/.openclaw/workspace/downloads/google-drive-folder/ActualizarLeyDesdeConsulta.mjs`
+
+Uso de prueba:
+
+```bash
+node /root/.openclaw/workspace/downloads/google-drive-folder/ActualizarLeyDesdeConsulta.mjs --dry-run "codigo del trabajo de chile"
+```
+
+Uso completo:
+
+```bash
+node /root/.openclaw/workspace/downloads/google-drive-folder/ActualizarLeyDesdeConsulta.mjs "codigo del trabajo de chile"
+```
+
+Qué hace:
+
+1. intenta resolver la ley pedida con LLM si hay modelo disponible
+2. si no, cae a matching heurístico contra la biblioteca maestra
+3. descarga HTML desde BCN
+4. limpia a `.txt`
+5. deja los `.txt` en `downloads/google-drive-folder/texto_limpio/`
+6. dispara la carga a Qdrant
+
 ## Nota
 
 El requisito principal pedido quedó respetado:

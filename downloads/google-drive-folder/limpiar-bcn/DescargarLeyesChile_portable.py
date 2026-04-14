@@ -159,6 +159,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--html-dir", default=str(DEFAULT_HTML_DIR))
     parser.add_argument("--only", nargs="*", help="Nombres de leyes a descargar")
+    parser.add_argument("--norma-id", help="Descargar una norma específica por idNorma BCN")
+    parser.add_argument("--name", help="Nombre lógico para --norma-id")
     args = parser.parse_args()
 
     html_dir = Path(args.html_dir)
@@ -166,7 +168,9 @@ def main():
     logger = configure_logging(html_dir)
 
     laws = biblioteca_maestra
-    if args.only:
+    if args.norma_id:
+        laws = {args.name or f'norma_{args.norma_id}': args.norma_id}
+    elif args.only:
         requested = set(args.only)
         laws = {k: v for k, v in biblioteca_maestra.items() if k in requested}
 
