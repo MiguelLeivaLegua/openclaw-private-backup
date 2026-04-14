@@ -1,0 +1,9 @@
+{
+  "createdAt": "2026-04-14T01:22:25.501Z",
+  "userDisplayName": "Juan Pérez",
+  "caseDisplayName": "Despido laboral",
+  "userSlug": "juan-perez",
+  "caseSlug": "despido-laboral",
+  "date": "2026-04-13",
+  "qdrantCollectionSuggested": "user_juan-perez"
+}
