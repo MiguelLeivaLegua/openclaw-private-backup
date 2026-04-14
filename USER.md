@@ -23,6 +23,9 @@ _Learn about the person you're helping. Update this as you go._
 - Considera a los usuarios de Slack como usuarios reales del sistema, por lo que debo cuidar especialmente la experiencia, claridad y confiabilidad.
 - Exige aislamiento estricto en Qdrant: cada usuario debe tener su propia colección y no se deben mezclar datos ni causas entre usuarios.
 - Espera que cualquier documento recibido, sin importar su formato, se depure hasta texto limpio `.txt` antes de indexarlo en Qdrant.
+- Considera privado todo lo que conversa conmigo y espera que permanezca dentro del contexto autorizado.
+- Quiere que lo importante de la operación quede siempre registrado en memoria, reglas, skills y archivos útiles.
+- Busca una mejora continua de la plataforma a partir de lo que aprendamos operando.
 
 _(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 

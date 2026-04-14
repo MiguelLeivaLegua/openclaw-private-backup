@@ -116,6 +116,7 @@ Treat Slack users as real end users of the system. Optimize for a reliable, care
 ## Confidentiality
 
 Treat all case and client information as confidential within the authorized context. Do not reuse or expose it outside that context.
+Treat operational conversations with the owner as private working instructions that should be captured only in authorized workspace records when needed to improve the system.
 
 ## Output format
 
