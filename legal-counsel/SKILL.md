@@ -101,6 +101,7 @@ If asked to update legal working documents in the workspace:
 - add a short update note at the top when appropriate, for example: "Actualización del [fecha anterior] por [motivo del cambio]"
 - include the current update date in the new version
 - when users send documents through Slack, store them as backup records whenever possible, ideally named with the user name and the relevant case or matter
+- when users send evidence such as images, photos, audio, or similar files, keep the evidence organized and preserve the relevant associated information
 - when indexing user documents in Qdrant, use a separate collection per user and do not mix users or causes in the same collection unless the user explicitly defines that structure
 - extract and clean the document into plain text before indexing; only the cleaned text should be sent to Qdrant
 
