@@ -6,7 +6,7 @@ import { QdrantVectorStore } from '@langchain/qdrant';
 import { StateGraph, END } from '@langchain/langgraph';
 
 const QDRANT_URL = 'http://127.0.0.1:6333';
-const COLECCION = 'normativas_chile';
+const DEFAULT_COLLECTION = 'normativas_chile';
 const MODELO_EMBEDDINGS = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2';
 const MAX_QDRANT_ATTEMPTS = 3;
 const MIN_CONFIDENCE_TO_SEND = 0.95;
@@ -47,11 +47,11 @@ function callEvalService(mode, payload) {
   return JSON.parse(out);
 }
 
-async function buildStore() {
+async function buildStore(collectionName = DEFAULT_COLLECTION) {
   const embeddings = new HuggingFaceLocalEmbeddings();
   return QdrantVectorStore.fromExistingCollection(embeddings, {
     url: QDRANT_URL,
-    collectionName: COLECCION,
+    collectionName,
     contentPayloadKey: 'texto',
     metadataPayloadKey: 'metadata',
   });
@@ -84,16 +84,18 @@ function buildCitation(fragment) {
 }
 
 async function nodoBusqueda(state) {
-  const store = state.store ?? await buildStore();
+  const collection = state.collection || DEFAULT_COLLECTION;
+  const store = state.store ?? await buildStore(collection);
   const limit = state.limit ?? 6;
   const results = await store.similaritySearchWithScore(state.question, limit);
   const fragments = results.map(([doc, score]) => normalizeDoc(doc, score));
   return {
     ...state,
     store,
+    collection,
     attempts: (state.attempts || 0) + 1,
     fragments,
-    history: [...(state.history || []), { stage: 'busqueda', attempt: (state.attempts || 0) + 1, hits: fragments.length }],
+    history: [...(state.history || []), { stage: 'busqueda', attempt: (state.attempts || 0) + 1, hits: fragments.length, collection }],
   };
 }
 
@@ -172,6 +174,7 @@ function nodoVerificacion(state) {
   const shouldSend = confidence >= MIN_CONFIDENCE_TO_SEND;
   return {
     ...state,
+    mode: state.mode || (state.collection && state.collection !== DEFAULT_COLLECTION ? 'cliente' : 'normas'),
     confidence,
     shouldSend,
     history: [...(state.history || []), { stage: 'verificacion', confidence, shouldSend }],
@@ -179,10 +182,17 @@ function nodoVerificacion(state) {
 }
 
 function nodoBCN(state) {
+  const isClientMode = (state.mode === 'cliente') || (state.collection && state.collection !== DEFAULT_COLLECTION);
   return {
     ...state,
-    fallbackToBCN: true,
-    history: [...(state.history || []), { stage: 'fallback_bcn', reason: 'Sin certeza suficiente tras tres intentos en Qdrant' }],
+    fallbackToBCN: !isClientMode,
+    needsHumanReview: Boolean(isClientMode),
+    history: [...(state.history || []), {
+      stage: 'fallback_bcn',
+      reason: isClientMode
+        ? 'Sin certeza suficiente tras tres intentos en Qdrant del cliente'
+        : 'Sin certeza suficiente tras tres intentos en Qdrant'
+    }],
   };
 }
 
@@ -208,6 +218,8 @@ export async function buildLegalNormsGraph() {
   const graph = new StateGraph({
     channels: {
       question: null,
+      mode: null,
+      collection: null,
       limit: null,
       store: null,
       attempts: null,
@@ -245,14 +257,36 @@ export async function buildLegalNormsGraph() {
 }
 
 async function main() {
-  const question = process.argv.slice(2).join(' ').trim();
+  const argv = process.argv.slice(2);
+  let question = '';
+  let collection = DEFAULT_COLLECTION;
+  let mode = 'normas';
+  let limit = 6;
+
+  for (let i = 0; i < argv.length; i += 1) {
+    const token = argv[i];
+    if (token === '--collection') {
+      collection = argv[++i] || collection;
+    } else if (token === '--mode') {
+      mode = argv[++i] || mode;
+    } else if (token === '--user-collection') {
+      collection = argv[++i] || collection;
+      mode = 'cliente';
+    } else if (token === '--limit') {
+      limit = Number(argv[++i] || limit);
+    } else if (!token.startsWith('--')) {
+      question += `${question ? ' ' : ''}${token}`;
+    }
+  }
+
+  question = question.trim();
   if (!question) {
-    console.error('Uso: node LangGraphLegalFlow.mjs "consulta jurídica"');
+    console.error('Uso: node LangGraphLegalFlow.mjs [--mode normas|cliente] [--collection nombre] [--limit n] "consulta jurídica"');
     process.exit(1);
   }
 
   const app = await buildLegalNormsGraph();
-  const result = await app.invoke({ question, limit: 6, attempts: 0, history: [] });
+  const result = await app.invoke({ question, mode, collection, limit, attempts: 0, history: [] });
   console.log(JSON.stringify(result, null, 2));
 }
 

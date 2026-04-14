@@ -51,6 +51,11 @@ Archivos base:
 
 Diseño actual del grafo:
 
+El grafo ahora soporta dos modos:
+
+- `normas` → colección `normativas_chile`
+- `cliente` → colección `user_<slug>` o la que se indique explícitamente
+
 1. **Nodo de búsqueda**
    - consulta Qdrant
    - recupera fragmentos semánticos
@@ -68,7 +73,9 @@ Diseño actual del grafo:
    - si detecta datos no soportados, invalida y reinicia
 5. **Nodo de verificación**
    - solo permite salida si la utilidad/certeza supera 95%
-   - si no lo logra tras 3 intentos, deriva a BCN Chile
+   - si no lo logra tras 3 intentos:
+     - en modo `normas`, deriva a BCN Chile
+     - en modo `cliente`, marca revisión humana o insuficiencia documental
 
 Regla de oro:
 
