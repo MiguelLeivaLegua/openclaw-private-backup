@@ -1,0 +1,4 @@
+PDF de prueba
+Validación de generación .pdf desde OpenClaw.
+
+-- 1 of 1 --

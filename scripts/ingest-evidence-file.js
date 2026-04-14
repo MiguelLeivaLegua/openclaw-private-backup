@@ -39,6 +39,7 @@ function buildTxtPlaceholder(originalPath, ext, fileName) {
     'NOTA:',
     'Este archivo fue ingresado al flujo de evidencia.',
     'Si el formato no es texto plano, aquí debe quedar el texto limpio extraído antes de indexar en Qdrant.',
+    'Usar scripts/extract-evidence-text.js para extracción automática cuando aplique.',
   ];
 
   if (ext === '.txt' || ext === '.md' || ext === '.csv' || ext === '.json') {
