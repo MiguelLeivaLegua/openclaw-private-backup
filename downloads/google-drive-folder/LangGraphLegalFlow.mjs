@@ -73,12 +73,12 @@ function normalizeDoc(doc, score) {
   return {
     score,
     texto: String(doc.pageContent || '').trim(),
-    titulo: metadata.titulo || null,
-    fuente: metadata.fuente || null,
-    articulo: metadata.articulo || null,
-    archivo: metadata.archivo || null,
-    pagina: metadata.pagina || metadata.page || null,
-    parrafo: metadata.parrafo || metadata.paragraph || null,
+    titulo: metadata.titulo || doc?.metadata?.titulo || null,
+    fuente: metadata.fuente || doc?.metadata?.fuente || null,
+    articulo: metadata.articulo || doc?.metadata?.articulo || null,
+    archivo: metadata.archivo || doc?.metadata?.archivo || null,
+    pagina: metadata.pagina || metadata.page || doc?.metadata?.pagina || doc?.metadata?.page || null,
+    parrafo: metadata.parrafo || metadata.paragraph || doc?.metadata?.parrafo || doc?.metadata?.paragraph || null,
     chunk_index: metadata.chunk_index ?? null,
     metadata,
   };

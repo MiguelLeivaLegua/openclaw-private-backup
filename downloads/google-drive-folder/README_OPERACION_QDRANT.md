@@ -7,7 +7,7 @@ Para preguntas sobre leyes chilenas, normas o relaciones jurídicas basadas en l
 ## Archivos clave en esta carpeta
 
 - `SubirColeccionLeyes.py` → recarga completa del corpus en Qdrant
-- `SubirColeccionLeyesIncremental.mjs` → carga incremental de un `.txt` puntual en Qdrant
+- `SubirColeccionLeyesIncremental.mjs` → carga incremental de un `.txt` puntual en Qdrant con metadatos enriquecidos (`titulo`, `fuente`, `id_norma`, `articulo`, `capitulo`, `parrafo`, etc.)
 - `ActualizarLeyDesdeConsulta.mjs` → resuelve una ley por consulta y dispara descarga, limpieza e indexación incremental
 - `ConsultarQdrant.py` → consulta semántica rápida sobre Qdrant
 - `ConsultarQdrantLangChain.mjs` → consulta y cruces sobre Qdrant usando LangChain
@@ -90,6 +90,19 @@ Regla de oro:
 - si la respuesta contiene datos no respaldados por los fragmentos, no se entrega
 - se reintenta hasta 3 veces en Qdrant
 - recién después se habilita fallback a BCN Chile
+
+Metadatos enriquecidos actuales del corpus legal:
+
+- el cargador incremental ya intenta derivar y guardar por chunk:
+  - `titulo`
+  - `fuente`
+  - `id_norma`
+  - `libro`
+  - `titulo_normativo`
+  - `capitulo`
+  - `parrafo`
+  - `articulo`
+- esto mejora citas, contraste y trazabilidad en el grafo
 
 Servicio interno actual:
 

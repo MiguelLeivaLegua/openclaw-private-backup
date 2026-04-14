@@ -131,6 +131,38 @@ function dividirTextoLegal(texto) {
   return dividirRecursivo(normalizarTexto(texto), CHUNK_SIZE, OVERLAP, 0);
 }
 
+function parseNormaInfo(archivo, texto) {
+  const stem = path.basename(archivo, '.txt');
+  const idMatch = stem.match(/_(\d+)$/);
+  const idNorma = idMatch ? idMatch[1] : null;
+  const norma = stem.replace(/_/g, ' ').replace(/\s+\d+$/, '').trim();
+  const firstLines = texto.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 10);
+  const titulo = firstLines.find((line) => line.length > 8) || norma;
+  return {
+    norma,
+    titulo,
+    idNorma,
+    fuente: 'BCN Chile',
+    archivo,
+  };
+}
+
+function extractChunkMetadata(chunk, baseInfo) {
+  const libro = chunk.match(/LIBRO\s+[IVXLCDM]+/i)?.[0] || null;
+  const tituloNormativo = chunk.match(/T[ÍI]TULO\s+[IVXLCDM]+/i)?.[0] || null;
+  const capitulo = chunk.match(/CAP[ÍI]TULO\s+[IVXLCDM]+/i)?.[0] || null;
+  const parrafo = chunk.match(/P[ÁA]RRAFO\s+\d+[°º]?/i)?.[0] || null;
+  const articulo = chunk.match(/Art[íi]culo\s+\d+[°º]?|Art\.\s*\d+[°º]?/i)?.[0] || null;
+  return {
+    ...baseInfo,
+    libro,
+    titulo_normativo: tituloNormativo,
+    capitulo,
+    parrafo,
+    articulo,
+  };
+}
+
 function parseArgs(argv) {
   const args = { file: null };
   for (let i = 0; i < argv.length; i += 1) {
@@ -161,7 +193,7 @@ async function main() {
   const textoCrudo = fs.readFileSync(rutaTxt, 'utf8');
   const textoLimpio = limpiarTextoLegal(textoCrudo);
   if (!textoLimpio || textoLimpio.length < 100) throw new Error(`Sin contenido legal extraíble: ${archivo}`);
-  const nombreNorma = path.basename(archivo, '.txt').replace(/_/g, ' ').replace(/\s+\d+$/, '');
+  const baseInfo = parseNormaInfo(archivo, textoLimpio);
   const chunks = dividirTextoLegal(textoLimpio).filter((chunk) => chunk.trim().length >= 100);
   const client = new QdrantClient({ url: QDRANT_URL });
   await ensureCollection(client);
@@ -172,23 +204,36 @@ async function main() {
     const batch = chunks.slice(i, i + BATCH_SIZE);
     const vectors = [];
     for (const chunk of batch) vectors.push(await embedOne(chunk));
-    const points = batch.map((chunk, idx) => ({
-      id: crypto.randomUUID(),
-      vector: vectors[idx],
-      payload: {
-        texto: chunk,
-        archivo,
-        norma: nombreNorma,
-        chunk_num: i + idx + 1,
-        total_chunks: chunks.length,
-        chars: chunk.length,
-      },
-    }));
+    const points = batch.map((chunk, idx) => {
+      const meta = extractChunkMetadata(chunk, baseInfo);
+      return {
+        id: crypto.randomUUID(),
+        vector: vectors[idx],
+        payload: {
+          texto: chunk,
+          archivo,
+          norma: baseInfo.norma,
+          titulo: meta.titulo,
+          fuente: meta.fuente,
+          id_norma: meta.idNorma,
+          libro: meta.libro,
+          titulo_normativo: meta.titulo_normativo,
+          capitulo: meta.capitulo,
+          parrafo: meta.parrafo,
+          articulo: meta.articulo,
+          chunk_index: i + idx + 1,
+          chunk_num: i + idx + 1,
+          total_chunks: chunks.length,
+          chars: chunk.length,
+          metadata: meta,
+        },
+      };
+    });
     await client.upsert(COLECCION, { wait: true, points });
     total += points.length;
   }
 
-  console.log(JSON.stringify({ ok: true, archivo, chunks: total, coleccion: COLECCION }, null, 2));
+  console.log(JSON.stringify({ ok: true, archivo, chunks: total, coleccion: COLECCION, titulo: baseInfo.titulo, id_norma: baseInfo.idNorma }, null, 2));
 }
 
 main().catch((error) => {
