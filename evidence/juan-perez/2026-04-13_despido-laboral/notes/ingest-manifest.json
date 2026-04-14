@@ -1,0 +1,14 @@
+[
+  {
+    "ingestedAt": "2026-04-14T01:23:45.663Z",
+    "userDisplayName": "Juan Pérez",
+    "caseDisplayName": "Despido laboral",
+    "userSlug": "juan-perez",
+    "caseSlug": "despido-laboral",
+    "sourceFile": "/root/.openclaw/workspace/AGENTS.md",
+    "originalStoredAs": "/root/.openclaw/workspace/evidence/juan-perez/2026-04-13_despido-laboral/originals/AGENTS.md",
+    "extractedTextPath": "/root/.openclaw/workspace/evidence/juan-perez/2026-04-13_despido-laboral/extracted-text/agents.txt",
+    "qdrantStagingPath": "/root/.openclaw/workspace/evidence/juan-perez/2026-04-13_despido-laboral/qdrant-staging/agents.txt",
+    "originalExtension": ".md"
+  }
+]
