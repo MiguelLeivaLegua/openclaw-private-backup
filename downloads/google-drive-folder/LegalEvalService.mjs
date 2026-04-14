@@ -51,10 +51,30 @@ function heuristicQualification(question, fragments) {
 
 function heuristicDraft(question, fragments) {
   const top = fragments.slice(0, 4);
-  const answer = top.length
-    ? `Respuesta preliminar para: ${question}\n\n` + top.map((f, i) => `Fragmento ${i + 1}\nCita: ${f.cita || 'Sin cita enriquecida'}\nTexto: ${String(f.texto || '').slice(0, 900)}`).join('\n\n')
+  const avgRelevance = top.length
+    ? top.reduce((acc, cur) => acc + Number(cur.relevanceScore || cur.score || 0), 0) / top.length
+    : 0;
+  const certainty = avgRelevance >= 0.8 ? 'Alta' : avgRelevance >= 0.6 ? 'Media' : 'Baja / Requiere verificación';
+  const observation = top.length
+    ? (top.some((f) => !f.cita || f.cita === 'Sin cita enriquecida')
+      ? 'Los fragmentos recuperados no traen cita suficientemente enriquecida, por lo que la conclusión debe tratarse como preliminar.'
+      : 'La respuesta se apoya en los fragmentos recuperados.')
+    : 'No hay fragmentos suficientes para una conclusión confiable.';
+  const fundamento = top.length
+    ? top.map((f, i) => `Fragmento ${i + 1}: ${f.cita || 'Sin cita enriquecida'}`).join(' | ')
+    : 'Sin fundamento recuperado.';
+  const cuerpo = top.length
+    ? top.map((f, i) => `Fragmento ${i + 1}\nCita: ${f.cita || 'Sin cita enriquecida'}\nTexto: ${String(f.texto || '').slice(0, 900)}`).join('\n\n')
     : 'No hay fragmentos suficientes para redactar una respuesta preliminar.';
-  return { answer, source: 'heuristic' };
+  const answer = [
+    `Respuesta corta: análisis preliminar para: ${question}`,
+    `Fundamento: ${fundamento}`,
+    `Nivel de certeza: ${certainty}`,
+    `Observación: ${observation}`,
+    '',
+    cuerpo,
+  ].join('\n');
+  return { answer, certainty, observation, source: 'heuristic' };
 }
 
 function heuristicContrast(answer, fragments) {
@@ -79,7 +99,7 @@ async function qualify(model, payload) {
 
 async function draft(model, payload) {
   const ai = await askJson(model,
-    'Redacta una respuesta jurídica preliminar exclusivamente basada en fragmentos. Devuelve {answer}. No agregues hechos externos.',
+    'Redacta una respuesta jurídica preliminar exclusivamente basada en fragmentos. Devuelve {answer,certainty,observation}. La respuesta debe incluir conclusión breve, fundamento y nivel de certeza. No agregues hechos externos.',
     payload);
   return ai ? { ...ai, source: 'ai' } : heuristicDraft(payload.question, payload.fragments || []);
 }
