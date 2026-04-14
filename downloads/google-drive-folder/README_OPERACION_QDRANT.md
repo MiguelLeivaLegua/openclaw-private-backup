@@ -52,11 +52,15 @@ Diseño actual del grafo:
    - recupera fragmentos semánticos
 2. **Nodo de calificación**
    - evalúa si los fragmentos realmente responden a la pregunta del abogado
+   - si hay modelo disponible, usa IA estructurada
+   - si no, usa fallback heurístico
    - si no son relevantes, vuelve a buscar en Qdrant
 3. **Nodo de respuesta**
    - construye una respuesta preliminar citando lo disponible del fragmento
+   - si hay modelo disponible, redacta con IA limitada a los fragmentos
 4. **Nodo de contraste**
    - compara la respuesta contra los fragmentos
+   - si hay modelo disponible, hace contraste estructurado con IA
    - si detecta datos no soportados, invalida y reinicia
 5. **Nodo de verificación**
    - solo permite salida si la utilidad/certeza supera 95%
