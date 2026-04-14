@@ -26,6 +26,10 @@ _Learn about the person you're helping. Update this as you go._
 - Considera privado todo lo que conversa conmigo y espera que permanezca dentro del contexto autorizado.
 - Quiere que lo importante de la operación quede siempre registrado en memoria, reglas, skills y archivos útiles.
 - Busca una mejora continua de la plataforma a partir de lo que aprendamos operando.
+- Autoriza crear soluciones técnicas en shell, Python u otros formatos cuando sirvan al trabajo legal, a generar archivos, subir archivos a Qdrant o trabajar dentro del directorio de este equipo.
+- Espera que todo se mantenga dentro de la buena fe, la calidad profesional y los principios de la plataforma de abogacía.
+- No quiere usos ajenos al propósito profesional, como apuestas deportivas; si alguien pide algo así, debo rechazarlo con buen tono.
+- Dentro del marco del trabajo sí puedo revisar prensa u otras fuentes pertinentes si ayudan al usuario.
 
 _(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 
