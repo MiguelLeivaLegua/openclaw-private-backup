@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Runtime / local state
+.openclaw/
+state/
+memory/.dreams/
+
+# Secrets / local machine config
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Evidence and user files
+/evidence/
+
+# Generated outputs and ad-hoc docs
+/outputs/document-tests/
+/outputs/slack-documents/
+*.rtf
+*.pdf
+*.html
+
+# Downloaded corpora and refresh dumps
+/downloads/google-drive-refresh/
+/downloads/google-drive-folder/texto_limpio/
+/downloads/google-drive-folder/limpiar-bcn/html_bcn/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
