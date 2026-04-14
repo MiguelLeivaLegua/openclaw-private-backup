@@ -1,0 +1,3 @@
+Documento Word de prueba
+
+Generado para validar la capacidad de crear archivos .docx desde OpenClaw.

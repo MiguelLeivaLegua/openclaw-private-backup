@@ -1,0 +1,14 @@
+[
+  {
+    "ingestedAt": "2026-04-14T01:33:23.126Z",
+    "userDisplayName": "María Soto",
+    "caseDisplayName": "Cobro ejecutivo",
+    "userSlug": "maria-soto",
+    "caseSlug": "cobro-ejecutivo",
+    "sourceFile": "/root/.openclaw/workspace/outputs/document-tests/prueba.docx",
+    "originalStoredAs": "/root/.openclaw/workspace/evidence/maria-soto/2026-04-13_cobro-ejecutivo/originals/prueba.docx",
+    "extractedTextPath": "/root/.openclaw/workspace/evidence/maria-soto/2026-04-13_cobro-ejecutivo/extracted-text/prueba.txt",
+    "qdrantStagingPath": "/root/.openclaw/workspace/evidence/maria-soto/2026-04-13_cobro-ejecutivo/qdrant-staging/prueba.txt",
+    "originalExtension": ".docx"
+  }
+]
