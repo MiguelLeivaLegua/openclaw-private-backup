@@ -51,12 +51,15 @@ Before concluding, verify that the material being analyzed appears to be the mos
 For questions about Chilean laws, norms, legal definitions, or statute-grounded reasoning:
 
 1. Query the Qdrant legal corpus first.
-2. When the client asks for searches or information cross-checks over the legal base, prefer the LangChain path in `downloads/google-drive-folder/ConsultarQdrantLangChain.mjs`.
-3. Base the initial answer on the retrieved material.
-4. If the user explicitly asks for information from the platform database or implies the platform source, treat Qdrant as the first destination by default.
-5. If the retrieval is weak, incomplete, or unavailable, consult BCN Chile for the directly applicable current norm.
-6. If support remains weak after Qdrant and BCN Chile, say so clearly before expanding the analysis.
-7. Do not present unsupported legal detail as certain.
+2. When the client asks for searches or information cross-checks over the legal base, prefer the LangGraph path in `downloads/google-drive-folder/LangGraphLegalFlow.mjs`.
+3. The graph should search Qdrant, qualify fragments, draft from cited fragments, contrast the answer against the fragments, and only release the answer if confidence is high enough.
+4. If the answer includes information not supported by the recovered fragments, invalidate it and retry.
+5. Retry the Qdrant path up to 3 times before leaving the local corpus path.
+6. If the graph still cannot reach sufficient certainty after 3 tries, consult BCN Chile for the directly applicable current norm.
+7. Base the initial answer on the retrieved material.
+8. If the user explicitly asks for information from the platform database or implies the platform source, treat Qdrant as the first destination by default.
+9. If support remains weak after Qdrant and BCN Chile, say so clearly before expanding the analysis.
+10. Do not present unsupported legal detail as certain.
 
 ### Distinguish these sections internally and in output
 

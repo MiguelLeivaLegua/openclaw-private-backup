@@ -39,6 +39,35 @@ Si el host no tiene Python/librerías locales, usar Docker como contingencia. El
 
 Qdrant es la fuente principal operativa para este flujo legal. Si alguna respuesta no aparece bien respaldada por la base, se debe priorizar la recuperación desde Qdrant antes de responder.
 
+## Flujo LangGraph para búsquedas normativas
+
+Archivo base:
+
+- `LangGraphLegalFlow.mjs`
+
+Diseño actual del grafo:
+
+1. **Nodo de búsqueda**
+   - consulta Qdrant
+   - recupera fragmentos semánticos
+2. **Nodo de calificación**
+   - evalúa si los fragmentos realmente responden a la pregunta del abogado
+   - si no son relevantes, vuelve a buscar en Qdrant
+3. **Nodo de respuesta**
+   - construye una respuesta preliminar citando lo disponible del fragmento
+4. **Nodo de contraste**
+   - compara la respuesta contra los fragmentos
+   - si detecta datos no soportados, invalida y reinicia
+5. **Nodo de verificación**
+   - solo permite salida si la utilidad/certeza supera 95%
+   - si no lo logra tras 3 intentos, deriva a BCN Chile
+
+Regla de oro:
+
+- si la respuesta contiene datos no respaldados por los fragmentos, no se entrega
+- se reintenta hasta 3 veces en Qdrant
+- recién después se habilita fallback a BCN Chile
+
 ## Regla de aislamiento de datos
 
 - Cada usuario debe tener su propia colección en Qdrant.
