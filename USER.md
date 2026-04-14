@@ -14,6 +14,8 @@ _Learn about the person you're helping. Update this as you go._
 - En los canales Slack allowlisted `C0ASJJG0PAS`, `C0ASFSM958B` y `C0ASRS824DA` ya no hace falta mención para que me hablen.
 - Para el uso legal/productivo, esperan que pueda crear documentos cuando sea necesario, incluyendo Word, PowerPoint, PDF y Excel.
 - Prefiere que, cuando una tarea tome tiempo, vaya dando actualizaciones breves de progreso para que no parezca que quedé pegado.
+- Para consultas sobre leyes chilenas, normas y relaciones jurídicas, espera que use Qdrant como fuente principal de trabajo antes de responder.
+- Quiere que el programa legal de consulta/carga quede junto al corpus descargado en `downloads/google-drive-folder/` para replicación rápida ante emergencias.
 
 _(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 
