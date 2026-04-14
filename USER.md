@@ -33,6 +33,7 @@ _Learn about the person you're helping. Update this as you go._
 - Cuando el usuario pida información de la base de datos o dé a entender que quiere la respuesta desde la fuente propia de la plataforma, espera que vaya primero a Qdrant.
 - Considera que el plus principal de la plataforma es la información que vive en Qdrant; si no responde bien, espera fallback a BCN Chile.
 - El usuario puede enviar música, fotos, imágenes y otros archivos como evidencia; espera que mantenga ese material estructurado y que vaya guardando la información relevante.
+- Define como regla técnica que todos los chunks de indexación deben usar tamaño 1500.
 
 _(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 
