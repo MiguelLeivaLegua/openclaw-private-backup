@@ -209,6 +209,12 @@ Verificar al menos:
 - definiciones operativas de evidencia, manifiestos o metadatos no sensibles
 - no necesariamente los archivos probatorios en crudo
 
+## Documentación de arquitectura
+
+Para el diagrama técnico y la explicación ejecutiva del sistema legal con OpenClaw, Qdrant y LangGraph, revisar:
+
+- `ARCHITECTURE.md`
+
 ## Estado actual
 
 ### Ya hecho
